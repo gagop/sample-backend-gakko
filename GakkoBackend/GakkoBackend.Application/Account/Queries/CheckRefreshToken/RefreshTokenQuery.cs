@@ -4,6 +4,7 @@ using MediatR;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -12,15 +13,15 @@ namespace GakkoBackend.Application.Account.Queries.CheckRefreshToken
 {
     public class RefreshTokenQuery : IRequest<AddRefreshTokenCommand>
     {
-        public string Name { get; set; }
+        public Guid IdPerson { get; set; }
         public string RefreshToken { get; set; }
 
         public class Handler : IRequestHandler<RefreshTokenQuery, AddRefreshTokenCommand>
         {
-            private readonly StudentAppDbContext _context;
+            private readonly GakkoBackendContext _context;
             private readonly IMediator _mediator;
 
-            public Handler(StudentAppDbContext context, IMediator mediator)
+            public Handler(GakkoBackendContext context, IMediator mediator)
             {
                 _context = context;
                 _mediator = mediator;
@@ -28,11 +29,14 @@ namespace GakkoBackend.Application.Account.Queries.CheckRefreshToken
 
             public async Task<AddRefreshTokenCommand> Handle(RefreshTokenQuery request, CancellationToken cancellationToken)
             {
-                var userFromDb =
-                  await _context.Person
-                      .SingleOrDefaultAsync(x => x.Name == request.Name && x.RefreshToken == request.RefreshToken, cancellationToken);
+                var employeeFromDb =
+                    await _context.Employee
+                      .SingleOrDefaultAsync(x => x.IdEmployee == request.IdPerson && x.RefreshToken == request.RefreshToken, cancellationToken);
+                var personFromDb =
+                    await _context.Person
+                        .SingleOrDefaultAsync(x => x.IdPerson == request.IdPerson);
 
-                return userFromDb == null ? null : new AddRefreshTokenCommand { User = userFromDb };
+                return employeeFromDb == null ? null : new AddRefreshTokenCommand { Person = personFromDb, Employee = employeeFromDb };
             }
         }
     }

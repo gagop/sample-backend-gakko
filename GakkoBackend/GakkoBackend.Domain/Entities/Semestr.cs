@@ -1,17 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace GakkoBackend.Entities
+namespace GakkoBackend.Domain
 {
-    public partial class Semester
+    public partial class Semestr
     {
-        public Semester()
+        public Semestr()
         {
             Curriculum = new HashSet<Curriculum>();
         }
 
         public Guid IdSemestr { get; set; }
-        public string Name { get; set; }
+        public int Number { get; set; }
         public DateTime StartDate { get; set; }
         public DateTime EndDate { get; set; }
 

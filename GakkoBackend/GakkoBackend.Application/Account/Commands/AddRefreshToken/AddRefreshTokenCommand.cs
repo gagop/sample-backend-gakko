@@ -1,22 +1,24 @@
-﻿using GakkoBackend.Entities;
-using GakkoBackend.Persistence;
-using MediatR;
+﻿using MediatR;
 using System;
 using GakkoBackend.Shared.Constants;
 using System.Threading.Tasks;
 using System.Threading;
+using GakkoBackend.Persistence;
+using GakkoBackend.Domain;
+using Microsoft.EntityFrameworkCore;
 
 namespace GakkoBackend.Application.Account.Commands.AddRefreshToken
 {
     public class AddRefreshTokenCommand : IRequest<string>
     {
-        public Person User { get; set; }
+        public Person Person { get; set; }
+        public Employee Employee { get; set; }
         public class Handler : IRequestHandler<AddRefreshTokenCommand, string>
         {
-            private readonly StudentAppDbContext _context;
+            private readonly GakkoBackendContext _context;
             private readonly IMediator _mediator;
 
-            public Handler(StudentAppDbContext context, IMediator mediator)
+            public Handler(GakkoBackendContext context, IMediator mediator)
             {
                 _context = context;
                 _mediator = mediator;
@@ -26,8 +28,8 @@ namespace GakkoBackend.Application.Account.Commands.AddRefreshToken
             {
                 var refreshToken = Helpers.GenerateRefreshToken();
 
-                request.User.RefreshToken = refreshToken;
-                request.User.RefreshTokenExp = DateTime.UtcNow.AddHours(GlobalConsts.REFRESH_TOKEN_EXP_TIME_IN_HOURS);
+                request.Employee.RefreshToken = refreshToken;
+                request.Employee.RefreshTokenExpDate = DateTime.UtcNow.AddHours(GlobalConsts.REFRESH_TOKEN_EXP_TIME_IN_HOURS);
 
                 await _context.SaveChangesAsync(cancellationToken);
 
