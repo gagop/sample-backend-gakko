@@ -1,7 +1,5 @@
-﻿using System;
-using GakkoBackend.Domain;
+﻿using GakkoBackend.Domain;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata;
 
 namespace GakkoBackend.Persistence
 {
