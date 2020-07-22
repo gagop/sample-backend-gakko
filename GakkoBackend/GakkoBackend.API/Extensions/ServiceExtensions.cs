@@ -9,7 +9,6 @@ using System.Net;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
-using Swashbuckle.AspNetCore;
 using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.Filters;
 using GakkoBackend.Application.Account.Commands.RegisterEmployee;
@@ -27,7 +26,7 @@ namespace GakkoBackend.API.Extensions
                     {
                         ValidateIssuer = false,
                         ValidateAudience = false,
-                        ValidateLifetime = true, 
+                        ValidateLifetime = true,
                         ClockSkew = TimeSpan.Zero,
                         ValidIssuer = "", // TODO: change
                         ValidAudience = "", // TODO: change
@@ -42,7 +41,7 @@ namespace GakkoBackend.API.Extensions
                             {
                                 context.Response.StatusCode = (int)HttpStatusCode.Unauthorized;
                                 context.Response.Headers.Add("Token-Expired", "true");
-                            } 
+                            }
                             return Task.CompletedTask;
                         }
                     };

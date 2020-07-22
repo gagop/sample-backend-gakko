@@ -12,7 +12,7 @@ namespace GakkoBackend.Controllers
     public class BaseController : ControllerBase
     {
         private IMediator _mediator;
-        protected IMediator Mediator => _mediator ?? (_mediator = HttpContext.RequestServices.GetService<IMediator>());
+        protected IMediator Mediator => _mediator ??= HttpContext.RequestServices.GetService<IMediator>();
         protected Guid GetIdPerson()
         {
             return new Guid(User.FindFirst(ClaimTypes.NameIdentifier).Value);

@@ -5,9 +5,6 @@ using GakkoBackend.Persistence;
 using MediatR;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -31,12 +28,15 @@ namespace GakkoBackend.Application.Account.Queries.LoginEmployee
 
             public async Task<AddRefreshTokenCommand> Handle(LoginEmployeeQuery request, CancellationToken cancellationToken)
             {
-                var personFromDb = await _context.Person
+                Person personFromDb = await _context.Person
                     .SingleOrDefaultAsync(x => x.Email == request.Email, cancellationToken);
 
-                if (personFromDb == null) return null;
+                if (personFromDb == null)
+                {
+                    return null;
+                }
 
-                var employeeFromDb = await _context.Employee
+                Employee employeeFromDb = await _context.Employee
                     .SingleOrDefaultAsync(x => x.IdEmployee == personFromDb.IdPerson, cancellationToken);
 
                 if (new PasswordHasher<Employee>().VerifyHashedPassword(employeeFromDb, employeeFromDb.PasswordHash, request.Password) ==
@@ -46,7 +46,7 @@ namespace GakkoBackend.Application.Account.Queries.LoginEmployee
                 }
 
 
-                return new AddRefreshTokenCommand { Employee = employeeFromDb, Person = personFromDb };
+                return new AddRefreshTokenCommand { Employee = null, Person = personFromDb };
             }
         }
     }

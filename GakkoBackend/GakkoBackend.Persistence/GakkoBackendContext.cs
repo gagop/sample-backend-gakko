@@ -76,7 +76,6 @@ namespace GakkoBackend.Persistence
                     .HasMaxLength(400);
 
                 entity.Property(e => e.RefreshToken)
-                    .IsRequired()
                     .HasMaxLength(400);
 
                 entity.Property(e => e.RefreshTokenExpDate).HasColumnType("datetime");

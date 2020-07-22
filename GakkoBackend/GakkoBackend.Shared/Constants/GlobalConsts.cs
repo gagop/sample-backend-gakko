@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace GakkoBackend.Shared.Constants
+﻿namespace GakkoBackend.Shared.Constants
 {
     public static class GlobalConsts
     {

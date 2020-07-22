@@ -40,7 +40,6 @@ namespace GakkoBackend.Controllers
             var user = await Mediator.Send(loginCredentials);
 
             if (user == null) return NotFound("User does not exist");
-
             return Ok(GenerateTokensPair(user));
         }
 
