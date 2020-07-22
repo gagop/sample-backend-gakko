@@ -46,7 +46,7 @@ namespace GakkoBackend.Application.Account.Queries.LoginEmployee
                 }
 
 
-                return new AddRefreshTokenCommand { Employee = null, Person = personFromDb };
+                return new AddRefreshTokenCommand { Employee = employeeFromDb, Person = personFromDb };
             }
         }
     }
