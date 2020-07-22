@@ -29,24 +29,21 @@ namespace GakkoBackend.Application.Account.Queries.LoginEmployee
             public async Task<AddRefreshTokenCommand> Handle(LoginEmployeeQuery request, CancellationToken cancellationToken)
             {
                 Person personFromDb = await _context.Person
-                    .SingleOrDefaultAsync(x => x.Email == request.Email, cancellationToken);
+                                     .Include(p => p.Employee)
+                                     .SingleOrDefaultAsync(x => x.Email == request.Email, cancellationToken);
 
                 if (personFromDb == null)
                 {
                     return null;
                 }
 
-                Employee employeeFromDb = await _context.Employee
-                    .SingleOrDefaultAsync(x => x.IdEmployee == personFromDb.IdPerson, cancellationToken);
-
-                if (new PasswordHasher<Employee>().VerifyHashedPassword(employeeFromDb, employeeFromDb.PasswordHash, request.Password) ==
+                if (new PasswordHasher<Employee>().VerifyHashedPassword(personFromDb.Employee, personFromDb.Employee.PasswordHash, request.Password) ==
                     PasswordVerificationResult.Failed)
                 {
                     throw new AuthorizeException("Incorrect login or password");
                 }
 
-
-                return new AddRefreshTokenCommand { Employee = employeeFromDb, Person = personFromDb };
+                return new AddRefreshTokenCommand { Employee = personFromDb.Employee, Person = personFromDb };
             }
         }
     }

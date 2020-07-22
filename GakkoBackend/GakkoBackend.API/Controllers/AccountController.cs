@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
-using System.Text;
-using System.Threading.Tasks;
-using GakkoBackend.Application.Account;
+﻿using GakkoBackend.Application.Account;
 using GakkoBackend.Application.Account.Commands.AddRefreshToken;
 using GakkoBackend.Application.Account.Commands.RegisterEmployee;
 using GakkoBackend.Application.Account.Queries.CheckRefreshToken;
@@ -15,6 +9,12 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
+using System;
+using System.Collections.Generic;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace GakkoBackend.Controllers
 {
@@ -37,20 +37,26 @@ namespace GakkoBackend.Controllers
         [AllowAnonymous]
         public async Task<IActionResult> Login([FromBody] LoginEmployeeQuery loginCredentials)
         {
-            var user = await Mediator.Send(loginCredentials);
+            AddRefreshTokenCommand user = await Mediator.Send(loginCredentials);
 
-            if (user == null) return NotFound("User does not exist");
-            return Ok(GenerateTokensPair(user));
+            if (user == null)
+            {
+                return NotFound("User does not exist");
+            }
+
+            return Ok(await GenerateTokensPair(user));
         }
 
         [HttpPost("register")]
         [AllowAnonymous]
         public async Task<IActionResult> Register(RegisterEmployeeCommand registerUser)
         {
-            var res = await Mediator.Send(registerUser);
+            bool res = await Mediator.Send(registerUser);
 
             if (!res)
+            {
                 return BadRequest("User with this email already exists");
+            }
 
             return NoContent();
         }
@@ -68,13 +74,17 @@ namespace GakkoBackend.Controllers
                 return Unauthorized("Incorrect JWT token");
             }
 
-            var res = await Mediator.Send(new RefreshTokenQuery { IdPerson = GetIdPerson(), RefreshToken = tokens.RefreshToken });
+            AddRefreshTokenCommand res = await Mediator.Send(new RefreshTokenQuery { IdPerson = GetIdPerson(), RefreshToken = tokens.RefreshToken });
 
             if (res == null)
+            {
                 return NotFound("Refresh token was not found");
+            }
 
             if (Helpers.IsRefreshTokenExpired(res.Employee.RefreshTokenExpDate ?? DateTime.Now))
+            {
                 return BadRequest("Refresh token has expired");
+            }
 
             return Ok(GenerateTokensPair(res));
         }
@@ -90,16 +100,18 @@ namespace GakkoBackend.Controllers
         }
         private JwtSecurityToken CreateToken(AddRefreshTokenCommand response)
         {
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Configuration["SecretKey"]));
-            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+            SymmetricSecurityKey key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Configuration["SecretKey"]));
+            SigningCredentials creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
-            var claims = new List<Claim>();
-            claims.Add(new Claim(ClaimTypes.Role, GlobalConsts.USER_ROLE));
-            claims.Add(new Claim(ClaimTypes.NameIdentifier, response.Employee.IdEmployee.ToString()));
-            claims.Add(new Claim(ClaimTypes.Name, response.Person.Name));
-            claims.Add(new Claim(ClaimTypes.Surname, response.Person.Surname));
+            List<Claim> claims = new List<Claim>
+            {
+                new Claim(ClaimTypes.Role, GlobalConsts.USER_ROLE),
+                new Claim(ClaimTypes.NameIdentifier, response.Employee.IdEmployee.ToString()),
+                new Claim(ClaimTypes.Name, response.Person.Name),
+                new Claim(ClaimTypes.Surname, response.Person.Surname)
+            };
 
-            var token = new JwtSecurityToken(
+            JwtSecurityToken token = new JwtSecurityToken(
                 "",
                 "",
                 claims,
@@ -117,7 +129,7 @@ namespace GakkoBackend.Controllers
 
         private ClaimsPrincipal GetPrincipalFromExpiredToken(string token)
         {
-            var tokenValidationParameters = new TokenValidationParameters
+            TokenValidationParameters tokenValidationParameters = new TokenValidationParameters
             {
                 ValidateAudience = false,
                 ValidateIssuer = false,
@@ -126,10 +138,12 @@ namespace GakkoBackend.Controllers
                 ValidateLifetime = false
             };
 
-            var tokenHandler = new JwtSecurityTokenHandler();
-            var principal = tokenHandler.ValidateToken(token, tokenValidationParameters, out SecurityToken securityToken);
+            JwtSecurityTokenHandler tokenHandler = new JwtSecurityTokenHandler();
+            ClaimsPrincipal principal = tokenHandler.ValidateToken(token, tokenValidationParameters, out SecurityToken securityToken);
             if (!(securityToken is JwtSecurityToken jwtSecurityToken) || !jwtSecurityToken.Header.Alg.Equals(SecurityAlgorithms.HmacSha256, StringComparison.InvariantCultureIgnoreCase))
+            {
                 throw new SecurityTokenException("Invalid token");
+            }
 
             return principal;
         }
